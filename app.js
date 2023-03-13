@@ -29,7 +29,7 @@ const start = async () => {
         app.listen(port, console.log(`server is listeaning on port ${port}`))
     }
     catch (err){
-        console.log(err)
+        return err
     }
 }
 

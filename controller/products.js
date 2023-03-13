@@ -1,12 +1,7 @@
 const product = require('../model/produts')
 
-const getProductsStatic = async (req, res) => {
-    throw new Error('somthing went wrong while trying to get products')
-    res.status(200).json({msg:'product test'})
-}
-
 const getProducts = async (req, res) => {
-    const { featured, company, name } = req.query
+    const { featured, company, name, sort, select } = req.query
     const queryObject = {}
     
     if (featured) {
@@ -20,12 +15,31 @@ const getProducts = async (req, res) => {
     if (name) {
         queryObject.name = {$regex: name, $options: 'i'}
     }
-    console.log(queryObject)
-    const data = await product.find(queryObject)
+
+    let result =  product.find(queryObject)
+
+    if (sort) {
+        const sortList = sort.split(',').join(' ')
+        result = result.sort(sortList)
+    }
+    else {
+        result = result.sort('createdAt')
+    }
+
+    if (select) {
+        const selectList = select.split(',').join(' ')
+        result = result.select(selectList)
+    }
+
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 10
+    const skip = (page - 1) * limit
+    
+    const data = await result.skip(skip).limit(limit)
+
     res.status(200).json({ data, nbHits: data.length })
 }
 
 module.exports = {
-    getProductsStatic,
-    getProducts,
+    getProducts
 }
